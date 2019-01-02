@@ -36,14 +36,15 @@ def fetch_item(item_id):
     return item_id, (name, price, store, size)
 
 
-class ItemsResource(object):
-    def on_get(self, req, resp):
-        items = req.params.get('item')
-        logger.info('Received request for items: ' + str(items))
-        if type(items) is not list:
-            items = [items]
-        data = {}
+def maybe_wrap_in_list(v):
+    if type(v) is list:
+        return v
+    return [v]
 
+class ItemsResource(object):
+
+    def _get_items(self, items):
+        data = {}
         with futures.ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
             jobs =  [executor.submit(fetch_item, item_id)
                      for item_id in items]
@@ -60,8 +61,21 @@ class ItemsResource(object):
                         'store': store,
                         'size': size,
                     }
+        return json.dumps(data)
 
-        ret_val = json.dumps(data)
+    def on_post(self, req, resp):
+        items = json.loads(req.bounded_stream.read())['item']
+        items = maybe_wrap_in_list(items)
+        ret_val = self._get_items(items)
+        logger.info('Response: ' + ret_val)
+        resp.status = falcon.HTTP_200
+        resp.body = ret_val
+
+    def on_get(self, req, resp):
+        items = req.params.get('item')
+        logger.info('Received request for items: ' + str(items))
+        items = maybe_wrap_in_list(items)
+        ret_val = self._get_items(items)
         logger.info('Response: ' + ret_val)
         resp.status = falcon.HTTP_200
         resp.body = ret_val
