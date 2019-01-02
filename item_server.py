@@ -30,6 +30,9 @@ def fetch_item(item_id):
 
 
 class ItemsResource(object):
+    def on_post(self, req, resp):
+        return self.on_get(req, resp)
+
     def on_get(self, req, resp):
         items = req.params.get('item')
         logger.info('Received request for items: ' + str(items))
