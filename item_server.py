@@ -20,14 +20,20 @@ def fetch_item(item_id):
     url = URL_TEMPLATE.format(item=item_id)
     response = requests.get(url, headers=HEADERS)
     if not response.ok:
-        raise Exception(str(response.status_code) +  str(response.reason))
-    data = response.json()
-    name = data['container']['title']
-    price = data['container']['modules'][0]['data']['item']['pricing']['price']
-    store = (data['container']['modules'][0]['data']['breadcrumbs'][0]['path']
-        .split('/')[0])
-    size = data['container']['modules'][0]['data']['item']['size']
-    return item_id, name, price, store, size
+        return item_id, None
+    try:
+        data = response.json()
+        name = data['container']['title']
+        price = data['container']['modules'][0]['data']['item']['pricing']['price']
+        store = (data['container']['modules'][0]['data']['breadcrumbs'][0]['path']
+            .split('/')[0])
+    except:
+        return item_id, None
+    try:
+        size = data['container']['modules'][0]['data']['item']['size']
+    except:
+        size = ''
+    return item_id, (name, price, store, size)
 
 
 class ItemsResource(object):
@@ -42,13 +48,18 @@ class ItemsResource(object):
             jobs =  [executor.submit(fetch_item, item_id)
                      for item_id in items]
             for f in futures.as_completed(jobs):
-                item_id, name, price, store, size = f.result()
-                data[item_id] = {
-                    'name': name,
-                    'price': price,
-                    'store': store,
-                    'size': size,
-                }
+                item_id, details = f.result()
+                if not details:
+                    data[item_id] = {'valid': False}
+                else:
+                    name, price, store, size = details
+                    data[item_id] = {
+                        'valid': True,
+                        'name': name,
+                        'price': price,
+                        'store': store,
+                        'size': size,
+                    }
 
         ret_val = json.dumps(data)
         logger.info('Response: ' + ret_val)
