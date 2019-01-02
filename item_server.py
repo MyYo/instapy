@@ -26,13 +26,11 @@ def fetch_item(item_id):
     price = data['container']['modules'][0]['data']['item']['pricing']['price']
     store = (data['container']['modules'][0]['data']['breadcrumbs'][0]['path']
         .split('/')[0])
-    return item_id, name, price, store
+    size = data['container']['modules'][0]['data']['item']['size']
+    return item_id, name, price, store, size
 
 
 class ItemsResource(object):
-    def on_post(self, req, resp):
-        return self.on_get(req, resp)
-
     def on_get(self, req, resp):
         items = req.params.get('item')
         logger.info('Received request for items: ' + str(items))
@@ -44,11 +42,12 @@ class ItemsResource(object):
             jobs =  [executor.submit(fetch_item, item_id)
                      for item_id in items]
             for f in futures.as_completed(jobs):
-                item_id, name, price, store = f.result()
+                item_id, name, price, store, size = f.result()
                 data[item_id] = {
                     'name': name,
                     'price': price,
                     'store': store,
+                    'size': size,
                 }
 
         ret_val = json.dumps(data)
