@@ -59,18 +59,3 @@ app.add_route('/health', HealthResource())
 if __name__ == '__main__':
     httpd = simple_server.make_server('127.0.0.1', 8000, app)
     httpd.serve_forever()
-
-
-with futures.ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
-    # Start the load operations and mark each future with its URL
-    future_to_item = {
-        executor.submit(fetch_item, item_id, 60): item_id
-        for item_id in items}
-    for future in futures.as_completed(future_to_item):
-        result = future_to_item[future]
-        data[result['item_id']] = {
-            'item_id': item_id,
-            'name': name,
-            'price': price,
-            'store': store,
-        }
