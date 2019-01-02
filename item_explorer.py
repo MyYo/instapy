@@ -27,8 +27,12 @@ def get_item_price(item_id):
     name = data['container']['title']
     price = data['container']['modules'][0]['data']['item']['pricing']['price']
     store = data['container']['modules'][0]['data']['breadcrumbs'][0]['path'].split('/')[0]
+    try:
+        size = data['container']['modules'][0]['data']['item']['size']
+    except:
+        size = None
     # price = data['container']['modules'][0]['data']['item']['variable_estimate']['price_per_unit']
-    return name, price, store
+    return name, price, store, size
 
 
 
@@ -38,6 +42,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Error. usage: {} <item_id>'.format(sys.argv[0]))
         exit(1)
-    name, price, store = get_item_price(sys.argv[1])
-    print('[{store}] {name}: {price}'.format(store=store, name=name, price=price))
+    name, price, store, size = get_item_price(sys.argv[1])
+    print('[{store}] {name}: {price} ({size})'.format(store=store, name=name,
+        price=price, size=size))
 
