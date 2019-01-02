@@ -26,8 +26,9 @@ def get_item_price(item_id):
     data = response.json()
     name = data['container']['title']
     price = data['container']['modules'][0]['data']['item']['pricing']['price']
+    store = data['container']['modules'][0]['data']['breadcrumbs'][0]['path'].split('/')[0]
     # price = data['container']['modules'][0]['data']['item']['variable_estimate']['price_per_unit']
-    return name, price
+    return name, price, store
 
 
 
@@ -37,6 +38,6 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Error. usage: {} <item_id>'.format(sys.argv[0]))
         exit(1)
-    name, price = get_item_price(sys.argv[1])
-    print('{name}: {price}'.format(name=name, price=price))
+    name, price, store = get_item_price(sys.argv[1])
+    print('[{store}] {name}: {price}'.format(store=store, name=name, price=price))
 
