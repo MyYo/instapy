@@ -26,11 +26,14 @@ def get_item_price(item_id):
     data = response.json()
     name = data['container']['title']
     price = data['container']['modules'][0]['data']['item']['pricing']['price']
-    store = data['container']['modules'][0]['data']['breadcrumbs'][0]['path'].split('/')[0]
+
+    size = None
+    store = None
     try:
         size = data['container']['modules'][0]['data']['item']['size']
+        store = data['container']['modules'][0]['data']['breadcrumbs'][0]['path'].split('/')[0]
     except:
-        size = None
+        None
     # price = data['container']['modules'][0]['data']['item']['variable_estimate']['price_per_unit']
     return name, price, store, size
 

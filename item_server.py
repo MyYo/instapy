@@ -25,14 +25,17 @@ def fetch_item(item_id):
         data = response.json()
         name = data['container']['title']
         price = data['container']['modules'][0]['data']['item']['pricing']['price']
+    except:
+        return item_id, None
+
+    size = None
+    store = None
+    try:
+        size = data['container']['modules'][0]['data']['item']['size']
         store = (data['container']['modules'][0]['data']['breadcrumbs'][0]['path']
             .split('/')[0])
     except:
-        return item_id, None
-    try:
-        size = data['container']['modules'][0]['data']['item']['size']
-    except:
-        size = ''
+        pass
     return item_id, (name, price, store, size)
 
 
